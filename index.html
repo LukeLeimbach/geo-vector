@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Geographic Vector Map</title>
+    <style>
+        path {
+            stroke: black;
+            stroke-width: 1px;
+            fill: white;
+        }
+
+        svg {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0;
+        }
+
+        body {
+            background-image: linear-gradient(to bottom right, pink, rgb(108, 108, 255));
+            background-repeat: no-repeat;
+            background-size: cover;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/topojson@3"></script>
+<script>
+    var width = 1200,
+        height = 625;
+
+    var projection = d3.geoEquirectangular()
+        .translate([width/2, height/2]);
+
+    var svg1 = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    var path = d3.geoPath()
+        .projection(projection);
+
+    var g = svg1.append("g");
+
+    d3.json("data.geojson").then(function(topology) {
+
+        g.selectAll("path")
+            .data(topology.features)
+            .enter().append("path")
+            .attr("d", path);
+
+    });
+
+</script>
+
+<h2>Source: <a href="https://catalog.data.gov/dataset/blm-colorado-electric-mountain-bikes-allowed-routes-c8738">https://catalog.data.gov/dataset/blm-colorado-electric-mountain-bikes-allowed-routes-c8738</a></h2>
+</body>
+</html>
