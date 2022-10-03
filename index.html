@@ -5,59 +5,123 @@
     <title>Geographic Vector Map</title>
     <style>
         path {
+            stroke: rgb(226, 95, 95);
+            stroke-width: 1.2px;
+            fill: none;
+        }
+
+        .comap-path {
             stroke: black;
-            stroke-width: 1px;
             fill: white;
+            stroke-width: 1px;
         }
 
         svg {
+            position: absolute;
             display: block;
             margin-left: auto;
             margin-right: auto;
             padding: 0;
+            padding-top: 176px;
+            padding-left: 2px;
         }
 
         body {
-            background-image: linear-gradient(to bottom right, pink, rgb(108, 108, 255));
-            background-repeat: no-repeat;
-            background-size: cover;
-            width: 100%;
-            height: 100%;
+            background-color: white;
+            font-family: Verdana, sans-serif;
         }
+
+        img {
+            position: absolute;
+            z-index: -1;
+            width: 1050px;
+            height: 1055px;
+            padding-left: 20px;
+            padding-top: 150px;
+            opacity: 50%;
+        }
+
+        .key {
+            border: 2px solid black;
+            border-radius: 10px;
+            background-color: white;
+            position: absolute;
+            top: 500px;
+            left: 1200px;
+            width: 200px;
+            height: 120px;
+            padding: 5px;
+        }
+
+        .dot {
+            height: 25px;
+            width: 25px;
+            background-color: rgb(226, 95, 95);
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+            top: 7px;
+        }
+
     </style>
 </head>
 
 <body>
 
+<h1 style="text-align: center;">Hypothesis: There are more electric bike trails in the western half on Colorado than in the eastern half</h1>
+<img src="map.svg">
+
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="https://unpkg.com/topojson@3"></script>
 <script>
-    var width = 1200,
-        height = 625;
+    var width = 1000*1.07,
+        height = 1000;
 
-    var projection = d3.geoEquirectangular()
-        .translate([width/2, height/2]);
+    var projectionBase = d3.geoEquirectangular()
+        .scale(1)
+        .translate([0, 0]);
 
-    var svg1 = d3.select("body").append("svg")
+    var projectionCurrent = d3.geoEquirectangular()
+        .scale(1)
+        .translate([0, 0]);
+
+    var svg = d3.select("body").append("svg")
         .attr("width", width)
         .attr("height", height);
 
     var path = d3.geoPath()
-        .projection(projection);
+        .projection(projectionBase);
 
-    var g = svg1.append("g");
+    var pathCurrent = d3.geoPath()
+        .projection(projectionCurrent);
 
-    d3.json("data.geojson").then(function(topology) {
+    var g = svg.append("g");
+    var g2 = svg.append("g2");
+
+    d3.json("data2.geojson").then(function(json) {
+
+        var b = path.bounds(json),
+            s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
+            t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+
+        projectionBase
+            .scale(s)
+            .translate(t);
 
         g.selectAll("path")
-            .data(topology.features)
+            .data(json.features)
             .enter().append("path")
             .attr("d", path);
 
     });
 
+
+
 </script>
 
-<h2>Source: <a href="https://catalog.data.gov/dataset/blm-colorado-electric-mountain-bikes-allowed-routes-c8738">https://catalog.data.gov/dataset/blm-colorado-electric-mountain-bikes-allowed-routes-c8738</a></h2>
+<h2 style="text-align: center;">Source: <a target="_blank" href="https://catalog.data.gov/dataset/blm-colorado-electric-mountain-bikes-allowed-routes-c8738">https://catalog.data.gov/dataset/blm-colorado-electric-mountain-bikes-allowed-routes-c8738</a></h2>
+<h2 style="position: absolute; top: 180px; left: 350px;">Map of Colorado E-Bike Trails</h2>
+<div class="key">Key:<br><span class="dot"></span>E-Bike Trails<br><span class="dot" style="background-color: gray;"></span>County Lines<br><span class="dot" style="background-color: lightskyblue;"></span>Rivers</div>
+<h2 style="padding-top: 1200px; text-align: center;">Conclusion: There are more E-Bike trails in Western Colorado. This is likely because there are only mountains in the west. </h2>
 </body>
 </html>
